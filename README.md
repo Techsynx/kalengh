@@ -28,25 +28,25 @@ Unlike standard AI chat interfaces, **kalengh** operates passively in the backgr
 
 ```mermaid
 flowchart TD
-    subgraph Audio & Vision Capture
-        A[Speaker / System Audio] -->|Loopback / CoreAudio| B[Voice Activity Detector (VAD)]
-        B -->|Silence Gap Detected| C[Groq Whisper API / Local Whisper]
-        D[Screen / IDE] -->|Native Desktop Capture| E[Screenshot Buffer & Vision Pipeline]
+    subgraph Capture ["Audio and Vision Capture"]
+        A["Speaker / System Audio"] -->|Loopback / CoreAudio| B["Voice Activity Detector (VAD)"]
+        B -->|Silence Gap Detected| C["Groq Whisper API / Local Whisper"]
+        D["Screen / IDE"] -->|Native Desktop Capture| E["Screenshot Buffer & Vision Pipeline"]
     end
 
-    subgraph kalengh Core Engine
-        C -->|Transcribed Text| F[Question Classifier & Prompt Router]
+    subgraph CoreEngine ["kalengh Core Engine"]
+        C -->|Transcribed Text| F["Question Classifier & Prompt Router"]
         E -->|Visual Context| F
-        F --> G{Provider Mode}
-        G -->|BYOK Cloud| H[Groq API Key Pool & Rotation]
-        G -->|Local AI| I[Local Ollama / LLaMA 3.1]
-        H --> J[High-Speed LLM Inference]
+        F --> G{"Provider Mode"}
+        G -->|BYOK Cloud| H["Groq API Key Pool & Rotation"]
+        G -->|Local AI| I["Local Ollama / LLaMA 3.1"]
+        H --> J["High-Speed LLM Inference"]
     end
 
-    subgraph Discreet Overlay
-        J --> K[Format Filter: Zero Math Symbols & Staff Tone]
+    subgraph Overlay ["Discreet Overlay"]
+        J --> K["Format Filter: Zero Math Symbols & Staff Tone"]
         I --> K
-        K --> L[Transparent Glassmorphic HUD]
+        K --> L["Transparent Glassmorphic HUD"]
     end
 ```
 
@@ -61,10 +61,10 @@ flowchart TD
 
 ### Option 1: Pre-Built Installers
 
-* **Windows**: Download `kalengh-Setup.exe` from the [Latest Releases](https://github.com/Techsynx/kalengh/releases) and double-click to install.
-* **macOS**: Download `kalengh.dmg` from Releases. Drag it into your Applications folder.
+* **Windows**: Download `kalengh-1.0.1 Setup.exe` from the [Latest Releases](https://github.com/Techsynx/kalengh/releases) and double-click to install.
+* **macOS**: Download `kalengh-1.0.1-arm64.dmg` from Releases. Drag it into your Applications folder.
   > **Note for macOS:** On first launch, open **System Settings > Privacy & Security > Screen Recording** (and Microphone) and enable permissions for **kalengh**.
-* **Linux**: Download the `.AppImage` or `.deb` package. Make it executable (`chmod +x kalengh.AppImage`) and launch.
+* **Linux**: Download the `.deb` or `.AppImage` package. Make it executable and launch.
 
 ---
 
