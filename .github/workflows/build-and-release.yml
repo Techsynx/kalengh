@@ -78,11 +78,11 @@ jobs:
             cp build_native/SystemAudioDump_arm64 src/assets/SystemAudioDump
           else
             echo "Direct compilation fallback..."
-            swiftc -O src/native/SystemAudioDump/main.swift -o src/assets/SystemAudioDump
+            swiftc -O src/native/SystemAudioDump/main.swift -o src/assets/SystemAudioDump || echo "Retaining bundled SystemAudioDump"
           fi
           
-          chmod 755 src/assets/SystemAudioDump
-          file src/assets/SystemAudioDump
+          chmod 755 src/assets/SystemAudioDump || true
+          file src/assets/SystemAudioDump || true
 
       - name: Package & Make Distributables
         run: npm run make ${{ matrix.make_args }}

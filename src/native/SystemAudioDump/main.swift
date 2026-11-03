@@ -1,6 +1,6 @@
 import Foundation
 import AVFoundation
-@preconcurrency import ScreenCaptureKit
+import ScreenCaptureKit
 import CoreMedia
 
 @main
@@ -64,9 +64,7 @@ struct SystemAudioDump {
       try await stream.startCapture()
       print("Started capture")
 
-      await MainActor.run {
-        print("✅ Capturing system audio. Press ⌃C to stop.", to: &standardError)
-      }
+      fputs("✅ Capturing system audio. Press ⌃C to stop.\n", Darwin.stderr)
       
       // keep the process alive with a safer approach
       print("Entering main loop...")
@@ -190,15 +188,5 @@ final class AudioDumper: NSObject, SCStreamDelegate, SCStreamOutput {
   
   func stream(_ stream: SCStream, didStopWithError error: Error) {
     fputs("Stream stopped with error: \(error)\n", Darwin.stderr)
-  }
-}
-
-// Helper to print to stderr
-@MainActor var standardError = FileHandle.standardError
-extension FileHandle: @retroactive TextOutputStream {
-  public func write(_ string: String) {
-    if let data = string.data(using: .utf8) {
-      self.write(data)
-    }
   }
 }
