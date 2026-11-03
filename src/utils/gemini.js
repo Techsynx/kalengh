@@ -972,7 +972,7 @@ function killExistingSystemAudioDump() {
 }
 
 async function startMacOSAudioCapture(geminiSessionRef) {
-    if (process.platform !== 'darwin') return false;
+    if (process.platform !== 'darwin') return { success: false, error: 'Not on macOS' };
 
     // Kill any existing SystemAudioDump processes first
     await killExistingSystemAudioDump();
@@ -981,15 +981,28 @@ async function startMacOSAudioCapture(geminiSessionRef) {
 
     const { app } = require('electron');
     const path = require('path');
+    const fs = require('fs');
 
     let systemAudioPath;
-    if (app.isPackaged) {
+    if (app && app.isPackaged) {
         systemAudioPath = path.join(process.resourcesPath, 'SystemAudioDump');
     } else {
         systemAudioPath = path.join(__dirname, '../assets', 'SystemAudioDump');
     }
 
     console.log('SystemAudioDump path:', systemAudioPath);
+
+    if (!fs.existsSync(systemAudioPath)) {
+        console.error('SystemAudioDump binary not found at:', systemAudioPath);
+        return { success: false, error: 'SystemAudioDump binary not found at ' + systemAudioPath };
+    }
+
+    // Ensure binary is executable (chmod 755)
+    try {
+        fs.chmodSync(systemAudioPath, 0o755);
+    } catch (e) {
+        console.warn('Could not chmod SystemAudioDump:', e.message);
+    }
 
     const spawnOptions = {
         stdio: ['ignore', 'pipe', 'pipe'],
@@ -998,11 +1011,16 @@ async function startMacOSAudioCapture(geminiSessionRef) {
         },
     };
 
-    systemAudioProc = spawn(systemAudioPath, [], spawnOptions);
+    try {
+        systemAudioProc = spawn(systemAudioPath, [], spawnOptions);
+    } catch (spawnErr) {
+        console.error('Failed to spawn SystemAudioDump:', spawnErr);
+        return { success: false, error: 'Spawn failed: ' + spawnErr.message };
+    }
 
-    if (!systemAudioProc.pid) {
+    if (!systemAudioProc || !systemAudioProc.pid) {
         console.error('Failed to start SystemAudioDump');
-        return false;
+        return { success: false, error: 'Failed to start SystemAudioDump (no PID)' };
     }
 
     console.log('SystemAudioDump started with PID:', systemAudioProc.pid);
@@ -1059,7 +1077,7 @@ async function startMacOSAudioCapture(geminiSessionRef) {
         systemAudioProc = null;
     });
 
-    return true;
+    return { success: true };
 }
 
 function convertStereoToMono(stereoBuffer) {
@@ -1947,8 +1965,9 @@ function setupGeminiIpcHandlers(geminiSessionRef) {
         }
 
         try {
-            const success = await startMacOSAudioCapture(geminiSessionRef);
-            return { success };
+            const res = await startMacOSAudioCapture(geminiSessionRef);
+            if (typeof res === 'object') return res;
+            return { success: !!res, error: res ? null : 'Failed to start macOS audio capture' };
         } catch (error) {
             console.error('Error starting macOS audio capture:', error);
             return { success: false, error: error.message };

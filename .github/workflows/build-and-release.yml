@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    name: Build (${{ matrix.os }})
+    name: Build (${{ matrix.os }} - ${{ matrix.artifact_name }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -21,12 +21,19 @@ jobs:
           - os: windows-latest
             artifact_name: kalengh-windows
             artifact_path: out/make/squirrel.windows/x64/*
+            make_args: ""
           - os: macos-latest
-            artifact_name: kalengh-macos
+            artifact_name: kalengh-macos-arm64
             artifact_path: out/make/**/*.dmg
+            make_args: "-- --arch=arm64"
+          - os: macos-13
+            artifact_name: kalengh-macos-x64
+            artifact_path: out/make/**/*.dmg
+            make_args: "-- --arch=x64"
           - os: ubuntu-latest
             artifact_name: kalengh-linux
             artifact_path: out/make/**/*
+            make_args: ""
 
     steps:
       - name: Checkout code
@@ -51,8 +58,34 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
+      - name: Build Universal SystemAudioDump (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p build_native
+          echo "Compiling SystemAudioDump for x86_64 (Intel)..."
+          swiftc -target x86_64-apple-macosx13.0 -O src/native/SystemAudioDump/main.swift -o build_native/SystemAudioDump_x64 || true
+          echo "Compiling SystemAudioDump for arm64 (Apple Silicon)..."
+          swiftc -target arm64-apple-macosx13.0 -O src/native/SystemAudioDump/main.swift -o build_native/SystemAudioDump_arm64 || true
+          
+          if [ -f build_native/SystemAudioDump_x64 ] && [ -f build_native/SystemAudioDump_arm64 ]; then
+            echo "Creating Universal Mach-O fat binary..."
+            lipo -create -output src/assets/SystemAudioDump build_native/SystemAudioDump_x64 build_native/SystemAudioDump_arm64
+          elif [ -f build_native/SystemAudioDump_x64 ]; then
+            echo "Using x86_64 binary..."
+            cp build_native/SystemAudioDump_x64 src/assets/SystemAudioDump
+          elif [ -f build_native/SystemAudioDump_arm64 ]; then
+            echo "Using arm64 binary..."
+            cp build_native/SystemAudioDump_arm64 src/assets/SystemAudioDump
+          else
+            echo "Direct compilation fallback..."
+            swiftc -O src/native/SystemAudioDump/main.swift -o src/assets/SystemAudioDump
+          fi
+          
+          chmod 755 src/assets/SystemAudioDump
+          file src/assets/SystemAudioDump
+
       - name: Package & Make Distributables
-        run: npm run make
+        run: npm run make ${{ matrix.make_args }}
 
       - name: Upload Build Artifacts
         uses: actions/upload-artifact@v4

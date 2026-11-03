@@ -353,10 +353,17 @@ async function startCapture(screenshotIntervalSeconds = 5, imageQuality = 'mediu
             // On macOS, use SystemAudioDump for audio and getDisplayMedia for screen
             console.log('Starting macOS capture with SystemAudioDump...');
 
-            // Start macOS audio capture
-            const audioResult = await ipcRenderer.invoke('start-macos-audio');
-            if (!audioResult.success) {
-                throw new Error('Failed to start macOS audio capture: ' + audioResult.error);
+            // Start macOS audio capture safely without unhandled exceptions
+            try {
+                const audioResult = await ipcRenderer.invoke('start-macos-audio');
+                if (!audioResult || !audioResult.success) {
+                    console.warn('macOS system audio warning:', audioResult ? audioResult.error : 'Permission needed');
+                    cheatingDaddy.setStatus('Note: Audio permission required in System Settings');
+                } else {
+                    console.log('macOS system audio capture running successfully');
+                }
+            } catch (audioErr) {
+                console.warn('Could not start macOS audio capture:', audioErr.message);
             }
 
             // Get screen capture for screenshots

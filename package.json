@@ -1,7 +1,7 @@
 {
     "name": "kalengh",
     "productName": "kalengh",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "kalengh by exhuzaifa — Discreet real-time AI assistant for live screen and audio contextual assistance",
     "main": "src/index.js",
     "homepage": "https://exhuzaifa.vercel.app",

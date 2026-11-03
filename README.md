@@ -61,10 +61,11 @@ flowchart TD
 
 ### Option 1: Pre-Built Installers
 
-* **Windows**: Download `kalengh-1.0.1 Setup.exe` from the [Latest Releases](https://github.com/Techsynx/kalengh/releases) and double-click to install.
-* **macOS**: Download `kalengh-1.0.1-arm64.dmg` from Releases. Drag it into your Applications folder.
+* **Windows**: Download `kalengh-1.0.2 Setup.exe` from the [Latest Releases](https://github.com/Techsynx/kalengh/releases) and double-click to install.
+* **macOS (Apple Silicon M1/M2/M3/M4)**: Download `kalengh-1.0.2-arm64.dmg` from Releases. Drag it into your Applications folder.
+* **macOS (Intel Mac)**: Download `kalengh-1.0.2-x64.dmg` from Releases. Drag it into your Applications folder.
   > **Note for macOS:** On first launch, open **System Settings > Privacy & Security > Screen Recording** (and Microphone) and enable permissions for **kalengh**.
-* **Linux**: Download the `.deb` or `.AppImage` package. Make it executable and launch.
+* **Linux**: Download the `.deb` package (`kalengh_1.0.2_amd64.deb`). Install with `sudo dpkg -i kalengh_1.0.2_amd64.deb` or launch directly.
 
 ---
 
