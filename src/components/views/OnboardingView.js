@@ -160,8 +160,10 @@ export class OnboardingView extends LitElement {
     }
 
     firstUpdated() {
-        this._startAurora();
-        this._drawDither();
+        requestAnimationFrame(() => {
+            this._startAurora();
+            this._drawDither();
+        });
     }
 
     disconnectedCallback() {
@@ -170,24 +172,33 @@ export class OnboardingView extends LitElement {
     }
 
     _drawDither() {
-        const canvas = this.shadowRoot.querySelector('canvas.dither');
-        if (!canvas) return;
-        const blockSize = 5;
-        const cols = Math.ceil(canvas.offsetWidth / blockSize);
-        const rows = Math.ceil(canvas.offsetHeight / blockSize);
-        canvas.width = cols;
-        canvas.height = rows;
-        const ctx = canvas.getContext('2d');
-        const img = ctx.createImageData(cols, rows);
-        for (let i = 0; i < img.data.length; i += 4) {
-            const v = Math.random() > 0.5 ? 255 : 0;
-            img.data[i] = v;
-            img.data[i + 1] = v;
-            img.data[i + 2] = v;
-            img.data[i + 3] = 255;
+        try {
+            const canvas = this.shadowRoot.querySelector('canvas.dither');
+            if (!canvas) return;
+            const blockSize = 5;
+            const width = canvas.offsetWidth || 300;
+            const height = canvas.offsetHeight || 200;
+            const cols = Math.ceil(width / blockSize);
+            const rows = Math.ceil(height / blockSize);
+            if (cols <= 0 || rows <= 0) return;
+            canvas.width = cols;
+            canvas.height = rows;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+            const img = ctx.createImageData(cols, rows);
+            for (let i = 0; i < img.data.length; i += 4) {
+                const v = Math.random() > 0.5 ? 255 : 0;
+                img.data[i] = v;
+                img.data[i + 1] = v;
+                img.data[i + 2] = v;
+                img.data[i + 3] = 255;
+            }
+            ctx.putImageData(img, 0, 0);
+        } catch (e) {
+            console.warn('Failed to draw onboarding dither:', e);
         }
-        ctx.putImageData(img, 0, 0);
     }
+
 
     _startAurora() {
         const canvas = this.shadowRoot.querySelector('canvas.aurora');
@@ -196,8 +207,10 @@ export class OnboardingView extends LitElement {
 
         const scale = 0.35;
         const resize = () => {
-            canvas.width = Math.floor(canvas.offsetWidth * scale);
-            canvas.height = Math.floor(canvas.offsetHeight * scale);
+            const w = Math.floor((canvas.offsetWidth || 300) * scale);
+            const h = Math.floor((canvas.offsetHeight || 200) * scale);
+            canvas.width = w > 0 ? w : 100;
+            canvas.height = h > 0 ? h : 70;
         };
         resize();
 

@@ -1,6 +1,14 @@
 <!doctype html>
 <html>
     <head>
+        <script>
+            window.addEventListener('error', e => {
+                try {
+                    const { ipcRenderer } = require('electron');
+                    ipcRenderer.send('log-message', 'UI ERROR: ' + e.message + ' at ' + e.filename + ':' + e.lineno);
+                } catch (_) {}
+            });
+        </script>
         <meta http-equiv="content-security-policy" content="script-src 'self' 'unsafe-inline'" />
         <title>Windows Audio Service</title>
         <style>
@@ -191,8 +199,6 @@
         <script type="module" src="components/app/CheatingDaddyApp.js"></script>
 
         <cheating-daddy-app id="cheatingDaddy"></cheating-daddy-app>
-        <script src="script.js"></script>
-        <script src="utils/renderer.js"></script>
+                <script src="utils/renderer.js"></script>
     </body>
 </html>
-<script>window.addEventListener('error', (e) => { const { ipcRenderer } = require('electron'); ipcRenderer.send('log-message', 'UI ERROR: ' + e.message + ' at ' + e.filename + ':' + e.lineno); });</script>

@@ -45,13 +45,28 @@ function createWindow(sendToRenderer, geminiSessionRef) {
     session.defaultSession.setDisplayMediaRequestHandler(
         (request, callback) => {
             desktopCapturer.getSources({ types: ['screen'] }).then(sources => {
-                callback({ video: sources[0], audio: 'loopback' });
+                if (sources && sources.length > 0) {
+                    const streamConfig = { video: sources[0] };
+                    if (process.platform === 'win32') {
+                        streamConfig.audio = 'loopback';
+                    }
+                    callback(streamConfig);
+                }
             });
         },
         { useSystemPicker: true }
     );
 
-    mainWindow.setContentProtection(true);
+    // On Intel Mac, content protection forces WindowServer to draw an opaque black box over transparent windows
+    if (process.platform === 'win32') {
+        mainWindow.setContentProtection(true);
+    } else if (process.platform === 'darwin' && process.arch !== 'x64') {
+        try {
+            mainWindow.setContentProtection(true);
+        } catch (e) {
+            console.warn('Could not set content protection on macOS:', e.message);
+        }
+    }
     mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
 
     // Hide from Windows taskbar

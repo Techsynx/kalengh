@@ -4,6 +4,13 @@ if (require('electron-squirrel-startup')) {
 
 const { app, BrowserWindow, shell, ipcMain } = require('electron');
 
+// Fix transparent window compositor & black screen bug on Intel Mac GPUs (e.g. Intel HD 6000)
+if (process.platform === 'darwin' && process.arch === 'x64') {
+    app.disableHardwareAcceleration();
+    app.commandLine.appendSwitch('disable-gpu');
+    app.commandLine.appendSwitch('disable-gpu-compositing');
+}
+
 // Disguise as Windows system service in Task Manager
 if (process.platform === 'win32') {
     try {

@@ -622,27 +622,39 @@ export class MainView extends LitElement {
         });
 
         // Dither
-        const blockSize = 8;
-        const cols = Math.ceil(aurora.offsetWidth / blockSize);
-        const rows = Math.ceil(aurora.offsetHeight / blockSize);
-        dither.width = cols;
-        dither.height = rows;
-        const dCtx = dither.getContext('2d');
-        const img = dCtx.createImageData(cols, rows);
-        for (let i = 0; i < img.data.length; i += 4) {
-            const v = Math.random() > 0.5 ? 255 : 0;
-            img.data[i] = v;
-            img.data[i + 1] = v;
-            img.data[i + 2] = v;
-            img.data[i + 3] = 255;
+        try {
+            const blockSize = 8;
+            const width = aurora.offsetWidth || 160;
+            const height = aurora.offsetHeight || 44;
+            const cols = Math.ceil(width / blockSize);
+            const rows = Math.ceil(height / blockSize);
+            if (cols > 0 && rows > 0) {
+                dither.width = cols;
+                dither.height = rows;
+                const dCtx = dither.getContext('2d');
+                if (dCtx) {
+                    const img = dCtx.createImageData(cols, rows);
+                    for (let i = 0; i < img.data.length; i += 4) {
+                        const v = Math.random() > 0.5 ? 255 : 0;
+                        img.data[i] = v;
+                        img.data[i + 1] = v;
+                        img.data[i + 2] = v;
+                        img.data[i + 3] = 255;
+                    }
+                    dCtx.putImageData(img, 0, 0);
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to draw button dither:', e);
         }
-        dCtx.putImageData(img, 0, 0);
 
         // Aurora
         const ctx = aurora.getContext('2d');
         const scale = 0.4;
-        aurora.width = Math.floor(aurora.offsetWidth * scale);
-        aurora.height = Math.floor(aurora.offsetHeight * scale);
+        const aw = Math.floor((aurora.offsetWidth || 160) * scale);
+        const ah = Math.floor((aurora.offsetHeight || 44) * scale);
+        aurora.width = aw > 0 ? aw : 64;
+        aurora.height = ah > 0 ? ah : 18;
 
         const blobs = [
             { color: [120, 160, 230], x: 0.1, y: 0.3, vx: 0.25, vy: 0.2, phase: 0 },

@@ -24,11 +24,11 @@ jobs:
             make_args: ""
           - os: macos-latest
             artifact_name: kalengh-macos-arm64
-            artifact_path: out/make/**/*.dmg
+            artifact_path: out/make/**/*
             make_args: "-- --arch=arm64"
-          - os: macos-13
+          - os: macos-latest
             artifact_name: kalengh-macos-x64
-            artifact_path: out/make/**/*.dmg
+            artifact_path: out/make/**/*
             make_args: "-- --arch=x64"
           - os: ubuntu-latest
             artifact_name: kalengh-linux

@@ -998,7 +998,7 @@ function handleShortcut(shortcutKey) {
 }
 
 // Create reference to the main app element
-const cheatingDaddyApp = document.querySelector('cheating-daddy-app');
+const getAppElement = () => document.querySelector('cheating-daddy-app') || document.querySelector('kalengh-app');
 
 // ============ THEME SYSTEM ============
 const theme = {
@@ -1284,17 +1284,26 @@ const cheatingDaddy = {
     getVersion: async () => ipcRenderer.invoke('get-app-version'),
 
     // Element access
-    element: () => cheatingDaddyApp,
-    e: () => cheatingDaddyApp,
+    element: () => getAppElement(),
+    e: () => getAppElement(),
 
     // App state functions - access properties directly from the app element
-    getCurrentView: () => cheatingDaddyApp.currentView,
-    getLayoutMode: () => cheatingDaddyApp.layoutMode,
+    getCurrentView: () => getAppElement()?.currentView || 'onboarding',
+    getLayoutMode: () => getAppElement()?.layoutMode || 'compact',
 
     // Status and response functions
-    setStatus: text => cheatingDaddyApp.setStatus(text),
-    addNewResponse: response => cheatingDaddyApp.addNewResponse(response),
-    updateCurrentResponse: response => cheatingDaddyApp.updateCurrentResponse(response),
+    setStatus: text => {
+        const app = getAppElement();
+        if (app && typeof app.setStatus === 'function') app.setStatus(text);
+    },
+    addNewResponse: response => {
+        const app = getAppElement();
+        if (app && typeof app.addNewResponse === 'function') app.addNewResponse(response);
+    },
+    updateCurrentResponse: response => {
+        const app = getAppElement();
+        if (app && typeof app.updateCurrentResponse === 'function') app.updateCurrentResponse(response);
+    },
 
     // Core functionality
     initializeGemini,
