@@ -61,13 +61,65 @@ flowchart TD
 
 ### Option 1: Pre-Built Installers
 
-* **Windows**: Download `kalengh-1.0.2 Setup.exe` from the [Latest Releases](https://github.com/Techsynx/kalengh/releases) and double-click to install.
-* **macOS (Apple Silicon M1/M2/M3/M4)**: Download `kalengh-1.0.2-arm64.dmg` from Releases. Drag it into your Applications folder.
-* **macOS (Intel Mac)**: Download `kalengh-1.0.2-x64.dmg` from Releases. Drag it into your Applications folder.
+* **Windows**: Download `kalengh Setup.exe` from the [Latest Releases](https://github.com/Techsynx/kalengh/releases) and double-click to install.
+* **macOS (Apple Silicon M1/M2/M3/M4)**: Download `kalengh-arm64.dmg` from Releases. Drag it into your Applications folder.
+* **macOS (Intel Mac)**: Download `kalengh-x64.dmg` from Releases. Drag it into your Applications folder.
   > **Note for macOS:** On first launch, open **System Settings > Privacy & Security > Screen Recording** (and Microphone) and enable permissions for **kalengh**.
-* **Linux**: Download the `.deb` package (`kalengh_1.0.2_amd64.deb`). Install with `sudo dpkg -i kalengh_1.0.2_amd64.deb` or launch directly.
+* **Linux**: Download the `.deb` package (`kalengh_amd64.deb`). Install with `sudo dpkg -i kalengh_amd64.deb` or launch directly.
 
 ---
+
+## 🎧 Audio Setup & Permissions Guide (macOS & Windows)
+
+kalengh isolates audio into two streams to ensure sub-second contextual responses without feedback loops:
+- **Interviewer Voice (Incoming)**: Captured directly from the system speaker output.
+- **Your Voice (Outgoing)**: Captured from your microphone (when enabled).
+
+### 🍎 macOS Permissions & Setup
+
+> [!IMPORTANT]
+> **Why is kalengh NOT listed under "Microphone" in macOS System Settings?**  
+> macOS routes interviewer audio through your speakers, **not** your microphone. To capture what the interviewer says without requiring virtual audio cables (like BlackHole or Soundflower), kalengh uses Apple's native **ScreenCaptureKit** CoreAudio pipeline.  
+> In macOS, ScreenCaptureKit is governed by **Screen & System Audio Recording**, NOT the Microphone!
+
+#### Step-by-Step macOS Audio Setup:
+1. Open **System Settings** ( > **System Settings**).
+2. Navigate to **Privacy & Security** → **Screen & System Audio Recording** *(or **Screen Recording** on macOS Ventura 13.x / Monterey)*.
+3. Find **kalengh** in the list and toggle the switch to **ON**.
+   * *If kalengh is not in the list, click the `+` button and add `kalengh.app` from your `/Applications` folder.*
+4. ⚠️ **MANDATORY RESTART**: After enabling the toggle, press **`Cmd + Q`** to **Quit kalengh completely and reopen it**. macOS requires the application to restart for the audio capture permissions to attach to the process.
+5. **Gatekeeper note (Ventura / OpenCore)**: If macOS says *"App is damaged or cannot be opened"*, open Terminal and run:
+   ```bash
+   xattr -cr /Applications/kalengh.app
+   ```
+
+---
+
+### 🪟 Windows Setup & Bluetooth Headphone Fix
+
+On Windows, kalengh uses **WASAPI System Loopback** to record speaker audio directly without requiring permission prompts. However, watch out for the **Bluetooth Profile Trap**:
+
+#### The Bluetooth Headphone Trap:
+When using Bluetooth headphones (AirPods, Sony, Bose, etc.), Windows splits audio into two profiles:
+1. `Headphones (Stereo)` — Default multimedia audio.
+2. `Headset (Hands-Free AG Audio)` — Meeting communication audio.
+
+> [!WARNING]
+> If Zoom, Google Meet, or Microsoft Teams routes call audio to the **Hands-Free** device while Windows default output is set to **Stereo**, kalengh will record silence!
+
+**How to Fix:**
+* Inside your meeting app (Zoom / Google Meet / Teams), go to **Audio Settings → Speaker**.
+* Set **Speaker** to **"Same as System"** or select your default playback device.
+* In **kalengh → Customize**, set **Audio Mode** to:
+  * **"Speaker Only"**: Listens exclusively to the interviewer.
+  * **"Both"**: Listens to both the interviewer and your microphone.
+* Ensure your system output volume is audible so the Voice Activity Detector (VAD) threshold triggers naturally.
+
+---
+
+### 📦 Source Code Note (`node_modules`)
+* **Pre-built Installers**: All dependencies and binaries are pre-compiled and bundled inside the `.exe` and `.dmg` installers. End users never need to install or download `node_modules`.
+* **Running from Source**: If cloning this repository, always run **`npm install`** first to create your local platform-specific `node_modules` before running `npm start`.
 
 ### Option 2: Running & Building from Source
 
