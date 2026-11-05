@@ -977,5 +977,10 @@ export class CheatingDaddyApp extends LitElement {
     }
 }
 
-customElements.define('kalengh-app', CheatingDaddyApp);
-customElements.define('cheating-daddy-app', CheatingDaddyApp);
+class KalenghApp extends CheatingDaddyApp {}
+if (!customElements.get('cheating-daddy-app')) {
+    customElements.define('cheating-daddy-app', CheatingDaddyApp);
+}
+if (!customElements.get('kalengh-app')) {
+    customElements.define('kalengh-app', KalenghApp);
+}

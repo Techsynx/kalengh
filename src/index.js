@@ -1,3 +1,23 @@
+// Prevent EPIPE / broken pipe crash when launched without console or disconnected pipes
+if (process.stdout && process.stdout.on) {
+    process.stdout.on('error', err => {
+        if (err && err.code === 'EPIPE') return;
+    });
+}
+if (process.stderr && process.stderr.on) {
+    process.stderr.on('error', err => {
+        if (err && err.code === 'EPIPE') return;
+    });
+}
+process.on('uncaughtException', err => {
+    if (err && err.code === 'EPIPE') return;
+    console.error('Uncaught Exception:', err);
+});
+process.on('unhandledRejection', reason => {
+    if (reason && reason.code === 'EPIPE') return;
+    console.error('Unhandled Rejection:', reason);
+});
+
 if (require('electron-squirrel-startup')) {
     process.exit(0);
 }
