@@ -319,6 +319,22 @@ ipcRenderer.on('update-status', (event, status) => {
     cheatingDaddy.setStatus(status);
 });
 
+// Listen for macOS system audio chunks forwarded from SystemAudioDump
+ipcRenderer.on('macos-system-audio-chunk', (event, base64Data) => {
+    try {
+        const binary = atob(base64Data);
+        const len = binary.length;
+        const bytes = new Uint8Array(len);
+        for (let i = 0; i < len; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        const int16Array = new Int16Array(bytes.buffer);
+        processVAD(int16Array, 'system');
+    } catch (err) {
+        console.warn('Error processing macOS audio chunk for VAD:', err);
+    }
+});
+
 /**
  * Request microphone permission and return list of audio input devices.
  * Calling this triggers the browser permission prompt; after permission is granted,

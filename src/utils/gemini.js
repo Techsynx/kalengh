@@ -1042,6 +1042,13 @@ async function startMacOSAudioCapture(geminiSessionRef) {
 
             const monoChunk = CHANNELS === 2 ? convertStereoToMono(chunk) : chunk;
 
+            // Forward to renderer for parallel Whisper VAD processing
+            try {
+                sendToRenderer('macos-system-audio-chunk', monoChunk.toString('base64'));
+            } catch (err) {
+                // ignore
+            }
+
             if (currentProviderMode === 'cloud') {
                 sendCloudAudio(monoChunk);
             } else if (currentProviderMode === 'local') {
@@ -1069,6 +1076,9 @@ async function startMacOSAudioCapture(geminiSessionRef) {
 
     systemAudioProc.on('close', code => {
         console.log('SystemAudioDump process closed with code:', code);
+        if (code !== 0 && code !== null) {
+            sendToRenderer('update-status', 'Permission needed: System Settings > Screen & Audio Recording');
+        }
         systemAudioProc = null;
     });
 
